@@ -27,14 +27,14 @@ func TestRun(t *testing.T) {
 	}{
 		{
 			name: "success", proj: "./testdata/tool/",
-			out:      "Go Build: SUCCESS\nGo Test: SUCCESS\nGofmt: SUCCESS\nGit Push: SUCCESS\n",
+			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: true,
 			mockCmd:  nil,
 		},
 		{
 			name: "successMock", proj: "./testdata/tool/",
-			out:      "Go Build: SUCCESS\nGo Test: SUCCESS\nGofmt: SUCCESS\nGit Push: SUCCESS\n",
+			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: false,
 			mockCmd:  mockCmdContext,
@@ -42,7 +42,7 @@ func TestRun(t *testing.T) {
 		{
 			name: "fail", proj: "./testdata/toolErr/",
 			out:      "",
-			expErr:   &stepErr{step: "go build"},
+			expErr:   &stepErr{step: "go linting"},
 			setupGit: false,
 			mockCmd:  nil,
 		},
@@ -50,6 +50,13 @@ func TestRun(t *testing.T) {
 			name: "failFormat", proj: "./testdata/toolFmtErr/",
 			out:      "",
 			expErr:   &stepErr{step: "go fmt"},
+			setupGit: false,
+			mockCmd:  nil,
+		},
+		{
+			name: "failLinting", proj: "./testdata/toolLintErr/",
+			out:      "",
+			expErr:   &stepErr{step: "go linting"},
 			setupGit: false,
 			mockCmd:  nil,
 		},
@@ -256,7 +263,7 @@ func TestRunKill(t *testing.T) {
 			go func() {
 				time.Sleep(2 * time.Second)
 				proc, _ := os.FindProcess(syscall.Getpid())
-				proc.Signal(tc.sig)
+				_ = proc.Signal(tc.sig)
 			}()
 
 			// select error

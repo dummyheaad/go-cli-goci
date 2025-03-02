@@ -29,25 +29,16 @@ func run(proj string, out io.Writer) error {
 		return fmt.Errorf("project directory is required: %w", ErrValidation)
 	}
 
-	pipeline := make([]executer, 4)
+	pipeline := make([]executer, 5)
 
-	pipeline[0] = newStep(
-		"go build",
-		"go",
-		"Go Build: SUCCESS",
-		proj,
-		[]string{"build", ".", "errors"},
-	)
+	// formatting
+	// linting
+	// cyclomatic complexity
+	// test
+	// build
+	// push
 
-	pipeline[1] = newStep(
-		"go test",
-		"go",
-		"Go Test: SUCCESS",
-		proj,
-		[]string{"test", "-v"},
-	)
-
-	pipeline[2] = newExceptionStep(
+	pipeline[0] = newExceptionStep(
 		"go fmt",
 		"gofmt",
 		"Gofmt: SUCCESS",
@@ -55,7 +46,31 @@ func run(proj string, out io.Writer) error {
 		[]string{"-l", "."},
 	)
 
-	pipeline[3] = newTimeoutStep(
+	pipeline[1] = newExceptionStep(
+		"go linting",
+		"golangci-lint",
+		"Golint: SUCCESS",
+		proj,
+		[]string{"run", "."},
+	)
+
+	pipeline[2] = newStep(
+		"go test",
+		"go",
+		"Go Test: SUCCESS",
+		proj,
+		[]string{"test", "-v"},
+	)
+
+	pipeline[3] = newStep(
+		"go build",
+		"go",
+		"Go Build: SUCCESS",
+		proj,
+		[]string{"build", ".", "errors"},
+	)
+
+	pipeline[4] = newTimeoutStep(
 		"git push",
 		"git",
 		"Git Push: SUCCESS",

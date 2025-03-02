@@ -21,12 +21,20 @@ func newExceptionStep(name, exe, message, proj string, args []string) exceptionS
 func (s exceptionStep) execute() (string, error) {
 	cmd := exec.Command(s.exe, s.args...)
 
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 	cmd.Dir = s.proj
 
 	if err := cmd.Run(); err != nil {
+		if stderr.Len() > 0 {
+			return "", &stepErr{
+				step:  s.name,
+				msg:   fmt.Sprintf(stderr.String()),
+				cause: err,
+			}
+		}
+
 		return "", &stepErr{
 			step:  s.name,
 			msg:   "failed to execute",
@@ -34,11 +42,13 @@ func (s exceptionStep) execute() (string, error) {
 		}
 	}
 
-	if out.Len() > 0 {
-		return "", &stepErr{
-			step:  s.name,
-			msg:   fmt.Sprintf("invalid format: %s", out.String()),
-			cause: nil,
+	if stdout.Len() > 0 {
+		if s.name == "go fmt" {
+			return "", &stepErr{
+				step:  s.name,
+				msg:   fmt.Sprintf("invalid format: %s", stdout.String()),
+				cause: nil,
+			}
 		}
 	}
 
