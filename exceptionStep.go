@@ -27,6 +27,15 @@ func (s exceptionStep) execute() (string, error) {
 	cmd.Dir = s.proj
 
 	if err := cmd.Run(); err != nil {
+
+		if s.name == "go cyclo" {
+			return "", &stepErr{
+				step:  s.name,
+				msg:   fmt.Sprintf("files with complexity score > 10: %s", stdout.String()),
+				cause: err,
+			}
+		}
+
 		if stderr.Len() > 0 {
 			return "", &stepErr{
 				step:  s.name,

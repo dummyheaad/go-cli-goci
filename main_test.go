@@ -27,14 +27,14 @@ func TestRun(t *testing.T) {
 	}{
 		{
 			name: "success", proj: "./testdata/tool/",
-			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
+			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGocyclo: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: true,
 			mockCmd:  nil,
 		},
 		{
 			name: "successMock", proj: "./testdata/tool/",
-			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
+			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGocyclo: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: false,
 			mockCmd:  mockCmdContext,
@@ -57,6 +57,13 @@ func TestRun(t *testing.T) {
 			name: "failLinting", proj: "./testdata/toolLintErr/",
 			out:      "",
 			expErr:   &stepErr{step: "go linting"},
+			setupGit: false,
+			mockCmd:  nil,
+		},
+		{
+			name: "FailCyclo", proj: "./testdata/toolCycloErr/",
+			out:      "",
+			expErr:   &stepErr{step: "go cyclo"},
 			setupGit: false,
 			mockCmd:  nil,
 		},
