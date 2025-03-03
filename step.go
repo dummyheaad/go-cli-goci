@@ -1,6 +1,8 @@
 package main
 
-import "os/exec"
+import (
+	"os/exec"
+)
 
 type step struct {
 	name    string
