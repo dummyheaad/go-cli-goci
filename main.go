@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 type executer interface {
@@ -30,56 +29,7 @@ func run(proj, branch string, out io.Writer) error {
 		return fmt.Errorf("project directory is required: %w", ErrValidation)
 	}
 
-	pipeline := make([]executer, 6)
-
-	pipeline[0] = newExceptionStep(
-		"go fmt",
-		"gofmt",
-		"Gofmt: SUCCESS",
-		proj,
-		[]string{"-l", "."},
-	)
-
-	pipeline[1] = newExceptionStep(
-		"go linting",
-		"golangci-lint",
-		"Golint: SUCCESS",
-		proj,
-		[]string{"run", "."},
-	)
-
-	pipeline[2] = newExceptionStep(
-		"go cyclo",
-		"gocyclo",
-		"Gocyclo: SUCCESS",
-		proj,
-		[]string{"-over", "10", "."},
-	)
-
-	pipeline[3] = newStep(
-		"go test",
-		"go",
-		"Go Test: SUCCESS",
-		proj,
-		[]string{"test", "-v"},
-	)
-
-	pipeline[4] = newStep(
-		"go build",
-		"go",
-		"Go Build: SUCCESS",
-		proj,
-		[]string{"build", ".", "errors"},
-	)
-
-	pipeline[5] = newTimeoutStep(
-		"git push",
-		"git",
-		"Git Push: SUCCESS",
-		proj,
-		[]string{"push", "origin", branch},
-		10*time.Second,
-	)
+	pipeline := createPipeline(proj, branch)
 
 	sig := make(chan os.Signal, 1)
 	errCh := make(chan error)
