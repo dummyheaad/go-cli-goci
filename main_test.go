@@ -20,55 +20,56 @@ func TestRun(t *testing.T) {
 	var testCases = []struct {
 		name     string
 		proj     string
+		branch   string
 		out      string
 		expErr   error
 		setupGit bool
 		mockCmd  func(ctx context.Context, name string, arg ...string) *exec.Cmd
 	}{
 		{
-			name: "success", proj: "./testdata/tool/",
+			name: "success", proj: "./testdata/tool/", branch: "master",
 			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGocyclo: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: true,
 			mockCmd:  nil,
 		},
 		{
-			name: "successMock", proj: "./testdata/tool/",
+			name: "successMock", proj: "./testdata/tool/", branch: "master",
 			out:      "Gofmt: SUCCESS\nGolint: SUCCESS\nGocyclo: SUCCESS\nGo Test: SUCCESS\nGo Build: SUCCESS\nGit Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: false,
 			mockCmd:  mockCmdContext,
 		},
 		{
-			name: "fail", proj: "./testdata/toolErr/",
+			name: "fail", proj: "./testdata/toolErr/", branch: "master",
 			out:      "",
 			expErr:   &stepErr{step: "go linting"},
 			setupGit: false,
 			mockCmd:  nil,
 		},
 		{
-			name: "failFormat", proj: "./testdata/toolFmtErr/",
+			name: "failFormat", proj: "./testdata/toolFmtErr/", branch: "master",
 			out:      "",
 			expErr:   &stepErr{step: "go fmt"},
 			setupGit: false,
 			mockCmd:  nil,
 		},
 		{
-			name: "failLinting", proj: "./testdata/toolLintErr/",
+			name: "failLinting", proj: "./testdata/toolLintErr/", branch: "master",
 			out:      "",
 			expErr:   &stepErr{step: "go linting"},
 			setupGit: false,
 			mockCmd:  nil,
 		},
 		{
-			name: "FailCyclo", proj: "./testdata/toolCycloErr/",
+			name: "FailCyclo", proj: "./testdata/toolCycloErr/", branch: "master",
 			out:      "",
 			expErr:   &stepErr{step: "go cyclo"},
 			setupGit: false,
 			mockCmd:  nil,
 		},
 		{
-			name: "failTimeout", proj: "./testdata/tool",
+			name: "failTimeout", proj: "./testdata/tool", branch: "master",
 			out:      "",
 			expErr:   context.DeadlineExceeded,
 			setupGit: false,
@@ -93,7 +94,7 @@ func TestRun(t *testing.T) {
 			}
 
 			var out bytes.Buffer
-			err := run(tc.proj, &out)
+			err := run(tc.proj, tc.branch, &out)
 			if tc.expErr != nil {
 				if err == nil {
 					t.Errorf("expected error: %q. Got 'nil' instead", tc.expErr)
@@ -230,17 +231,18 @@ func TestRunKill(t *testing.T) {
 	var testCases = []struct {
 		name   string
 		proj   string
+		branch string
 		sig    syscall.Signal
 		expErr error
 	}{
 		{
-			"SIGINT", "./testdata/tool", syscall.SIGINT, ErrSignal,
+			"SIGINT", "./testdata/tool", "master", syscall.SIGINT, ErrSignal,
 		},
 		{
-			"SIGTERM", "./testdata/tool", syscall.SIGTERM, ErrSignal,
+			"SIGTERM", "./testdata/tool", "master", syscall.SIGTERM, ErrSignal,
 		},
 		{
-			"SIGQUIT", "./testdata/tool", syscall.SIGQUIT, nil,
+			"SIGQUIT", "./testdata/tool", "master", syscall.SIGQUIT, nil,
 		},
 	}
 
@@ -264,7 +266,7 @@ func TestRunKill(t *testing.T) {
 			defer signal.Stop(expSigCh)
 
 			go func() {
-				errCh <- run(tc.proj, io.Discard)
+				errCh <- run(tc.proj, tc.branch, io.Discard)
 			}()
 
 			go func() {
