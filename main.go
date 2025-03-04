@@ -31,13 +31,6 @@ func run(proj string, out io.Writer) error {
 
 	pipeline := make([]executer, 6)
 
-	// formatting
-	// linting
-	// cyclomatic complexity
-	// test
-	// build
-	// push
-
 	pipeline[0] = newExceptionStep(
 		"go fmt",
 		"gofmt",
